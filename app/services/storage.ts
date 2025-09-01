@@ -42,3 +42,9 @@ export const addMessageToHistory = async (sessionId: string, message: Message) =
   }
   await saveChatHistory(history);
 };
+
+export const deleteChatSession = async (sessionId: string) => {
+  const history = await getChatHistory();
+  const updatedHistory = history.filter((session) => session.id !== sessionId);
+  await saveChatHistory(updatedHistory);
+};

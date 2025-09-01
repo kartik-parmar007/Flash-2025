@@ -6,8 +6,12 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  Alert,
+  Animated,
+  PanGestureHandler,
+  State,
 } from 'react-native';
-import { getChatHistory, ChatSession } from './services/storage';
+import { getChatHistory, ChatSession, deleteChatSession } from './services/storage';
 
 const HistoryScreen = () => {
   const [history, setHistory] = useState<ChatSession[]>([]);
@@ -28,19 +32,58 @@ const HistoryScreen = () => {
     router.push(`/(tabs)?sessionId=${newSessionId}`);
   };
 
+  const handleDeleteChat = useCallback((sessionId: string, sessionDate: string) => {
+    Alert.alert(
+      'Delete Chat',
+      `Are you sure you want to delete the chat from ${sessionDate}?`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteChatSession(sessionId);
+              await loadHistory(); // Reload the history after deletion
+            } catch (error) {
+              Alert.alert('Error', 'Failed to delete chat session');
+            }
+          },
+        },
+      ]
+    );
+  }, [loadHistory]);
+
+  const renderChatItem = ({ item }: { item: ChatSession }) => {
+    const sessionDate = new Date(parseInt(item.id)).toLocaleString();
+    
+    return (
+      <View style={styles.sessionItemContainer}>
+        <TouchableOpacity
+          style={styles.sessionItem}
+          onPress={() => router.push(`/(tabs)?sessionId=${item.id}`)}
+        >
+          <Text style={styles.sessionText}>Chat on {sessionDate}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => handleDeleteChat(item.id, sessionDate)}
+        >
+          <Text style={styles.deleteButtonText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <FlatList
         data={history}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.sessionItem}
-            onPress={() => router.push(`/(tabs)?sessionId=${item.id}`)}
-          >
-            <Text style={styles.sessionText}>Chat on {new Date(parseInt(item.id)).toLocaleString()}</Text>
-          </TouchableOpacity>
-        )}
+        renderItem={renderChatItem}
       />
       <TouchableOpacity style={styles.newChatButton} onPress={handleNewChat}>
         <Text style={styles.newChatButtonText}>+ New Chat</Text>
@@ -55,14 +98,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#0f172a',
     padding: 10,
   },
-  sessionItem: {
-    padding: 15,
+  sessionItemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#1e293b',
+  },
+  sessionItem: {
+    flex: 1,
+    padding: 15,
   },
   sessionText: {
     color: '#e5e7eb',
     fontSize: 16,
+  },
+  deleteButton: {
+    backgroundColor: '#dc2626',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginRight: 10,
+  },
+  deleteButtonText: {
+    color: '#ffffff',
+    fontWeight: '600',
+    fontSize: 14,
   },
   newChatButton: {
     backgroundColor: '#06b6d4',
