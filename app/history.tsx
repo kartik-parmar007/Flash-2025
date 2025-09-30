@@ -199,13 +199,14 @@ const styles = StyleSheet.create({
     borderBottomColor: '#1e293b',
   },
   headerTitle: {
-    color: '#f8fafc',
+    marginTop: 20,
+    color: '#d8e0e8ff',
     fontSize: 28,
     fontWeight: '700',
     marginBottom: 4,
   },
   headerSubtitle: {
-    color: '#94a3b8',
+    color: '#a2a9b3ff',
     fontSize: 14,
     fontWeight: '500',
   },

@@ -9,6 +9,7 @@ import {
   View,
   Vibration,
   Dimensions,
+  Text,
 } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -28,8 +29,12 @@ const LoginScreen = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockoutTimer, setLockoutTimer] = useState(30);
 
   const textInputRef = useRef<TextInput>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Animations
   const pinShake = useSharedValue(0);
@@ -43,7 +48,38 @@ const LoginScreen = () => {
     transform: [{ scale: buttonScale.value }],
   }));
 
+  // Start lockout timer
+  const startLockoutTimer = () => {
+    setIsLocked(true);
+    setLockoutTimer(30);
+    
+    timerRef.current = setInterval(() => {
+      setLockoutTimer((prev) => {
+        if (prev <= 1) {
+          setIsLocked(false);
+          setFailedAttempts(0);
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+          }
+          return 30;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
+
   const handlePinInput = (text: string) => {
+    if (isLocked) return;
+    
     const numericText = text.replace(/[^0-9]/g, '');
     setPassword(numericText);
 
@@ -52,6 +88,7 @@ const LoginScreen = () => {
         if (numericText === '1234') {
           handleLogin();
         } else {
+          // Wrong PIN
           Vibration.vibrate(200);
           pinShake.value = withSequence(
             withTiming(-10, { duration: 50 }),
@@ -59,6 +96,15 @@ const LoginScreen = () => {
             withTiming(-10, { duration: 50 }),
             withTiming(0, { duration: 50 })
           );
+          
+          const newFailedAttempts = failedAttempts + 1;
+          setFailedAttempts(newFailedAttempts);
+          
+          if (newFailedAttempts >= 3) {
+            // Lock after 3 failed attempts
+            startLockoutTimer();
+          }
+          
           setTimeout(() => setPassword(''), 400);
         }
       }, 200);
@@ -66,11 +112,12 @@ const LoginScreen = () => {
   };
 
   const handleLogin = () => {
-    if (password === '1234') {
+    if (password === '1234' && !isLocked) {
       setIsLoading(true);
+      setFailedAttempts(0); // Reset failed attempts on successful login
       setTimeout(() => {
         setShowSuccess(true);
-        setTimeout(() => router.replace('/history'), 1500);
+        setTimeout(() => router.replace('/Home'), 1500);
       }, 1000);
     }
   };
@@ -89,21 +136,49 @@ const LoginScreen = () => {
             <View style={styles.card}>
               <Ionicons name="lock-closed" size={48} color="#6366f1" style={{ marginBottom: 10 }} />
               <Animated.Text style={styles.title}>Welcome Back</Animated.Text>
-              <Animated.Text style={styles.subtitle}>Enter 4-digit PIN</Animated.Text>
+              <Animated.Text style={styles.subtitle}>
+                {isLocked ? `Account locked. Try again in ${lockoutTimer}s` : 'Enter 4-digit PIN'}
+              </Animated.Text>
+
+              {/* Failed attempts indicator */}
+              {failedAttempts > 0 && !isLocked && (
+                <Text style={styles.attemptsText}>
+                  {failedAttempts}/3 failed attempts
+                </Text>
+              )}
 
               {/* PIN Boxes */}
-              <TouchableOpacity onPress={() => textInputRef.current?.focus()} activeOpacity={1}>
-                <Animated.View style={[styles.pinContainer, pinAnimatedStyle]}>
+              <TouchableOpacity 
+                onPress={() => !isLocked && textInputRef.current?.focus()} 
+                activeOpacity={1}
+                disabled={isLocked}
+              >
+                <Animated.View style={[
+                  styles.pinContainer, 
+                  pinAnimatedStyle,
+                  isLocked && styles.lockedContainer
+                ]}>
                   {[...Array(4)].map((_, i) => (
                     <View
                       key={i}
-                      style={[styles.pinBox, password[i] && styles.filledPinBox]}
+                      style={[
+                        styles.pinBox, 
+                        password[i] && styles.filledPinBox,
+                        isLocked && styles.lockedPinBox
+                      ]}
                     >
-                      {password[i] ? <View style={styles.pinDot} /> : null}
+                      {password[i] ? <View style={[styles.pinDot, isLocked && styles.lockedPinDot]} /> : null}
                     </View>
                   ))}
                 </Animated.View>
               </TouchableOpacity>
+
+              {/* Lockout Icon */}
+              {isLocked && (
+                <View style={styles.lockoutIconContainer}>
+                  <Ionicons name="time-outline" size={24} color="#ef4444" />
+                </View>
+              )}
 
               {/* Hidden Input */}
               <TextInput
@@ -114,15 +189,24 @@ const LoginScreen = () => {
                 maxLength={4}
                 keyboardType="numeric"
                 secureTextEntry
+                editable={!isLocked}
               />
 
               {/* Button */}
               <AnimatedTouchable
-                style={[styles.button, buttonAnimatedStyle]}
+                style={[
+                  styles.button, 
+                  buttonAnimatedStyle,
+                  (isLocked || password.length !== 4 || isLoading) && styles.disabledButton
+                ]}
                 onPress={handleLogin}
-                disabled={password.length !== 4 || isLoading}
+                disabled={password.length !== 4 || isLoading || isLocked}
               >
-                <Feather name="arrow-right" size={22} color="#fff" />
+                <Feather 
+                  name="arrow-right" 
+                  size={22} 
+                  color={isLocked ? '#ccc' : '#fff'} 
+                />
               </AnimatedTouchable>
             </View>
           ) : (
@@ -168,11 +252,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#444',
     marginBottom: 25,
+    textAlign: 'center',
+  },
+  attemptsText: {
+    fontSize: 12,
+    color: '#ef4444',
+    marginBottom: 15,
+    fontWeight: '600',
   },
   pinContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 30,
+  },
+  lockedContainer: {
+    opacity: 0.5,
   },
   pinBox: {
     width: 55,
@@ -187,11 +281,23 @@ const styles = StyleSheet.create({
   filledPinBox: {
     borderColor: '#6366f1',
   },
+  lockedPinBox: {
+    borderColor: '#ef4444',
+  },
   pinDot: {
     width: 12,
     height: 12,
     borderRadius: 6,
     backgroundColor: '#6366f1',
+  },
+  lockedPinDot: {
+    backgroundColor: '#ef4444',
+  },
+  lockoutIconContainer: {
+    marginBottom: 20,
+    padding: 10,
+    borderRadius: 50,
+    backgroundColor: '#fef2f2',
   },
   hiddenInput: {
     position: 'absolute',
@@ -210,6 +316,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 15,
     elevation: 8,
+  },
+  disabledButton: {
+    backgroundColor: '#e5e7eb',
+    shadowOpacity: 0.1,
   },
   successContainer: {
     justifyContent: 'center',

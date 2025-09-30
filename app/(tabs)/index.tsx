@@ -1,23 +1,23 @@
 import { useLocalSearchParams } from 'expo-router';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ActivityIndicator,
+  View,
 } from 'react-native';
-import { getChatHistory, addMessageToHistory, Message } from '../services/storage';
+import { addMessageToHistory, getChatHistory, Message } from '../services/storage';
 
 // ====== CONFIG ======
 // Replace this with your n8n webhook URL
 // IMPORTANT: replace 192.168.X.X with your actual computer’s local IP address (find using ipconfig if on Windows)
 const WEBHOOK_URL =
-  "http://10.59.231.118:5678/webhook/01358e77-0252-46c7-80f9-200524927bdc"; 
+  "http://172.29.39.118:5678/webhook-test/01358e77-0252-46c7-80f9-200524927bdc"; 
 const REQUEST_BODY_KEY = "message";
 
 const ChatScreen = () => {
@@ -36,7 +36,7 @@ const ChatScreen = () => {
           setMessages(session.messages);
         } else {
           const initialMessage: Message = {
-            text: "👋 Hi! I'm connected to your n8n webhook. Send me a message!",
+            text: "👋 Hi! I'm connected to your n8n webhook. All your messages will be sent to n8n!",
             role: "bot",
             time: new Date().toLocaleTimeString(),
           };
@@ -58,6 +58,8 @@ const ChatScreen = () => {
     };
     setMessages((prev) => [...prev, userMessage]);
     await addMessageToHistory(sessionId, userMessage);
+    
+    const originalInput = input;
     setInput("");
     setIsTyping(true);
 
@@ -65,7 +67,7 @@ const ChatScreen = () => {
       const response = await fetch(WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [REQUEST_BODY_KEY]: input }),
+        body: JSON.stringify({ [REQUEST_BODY_KEY]: originalInput }),
       });
 
       let replyText;
