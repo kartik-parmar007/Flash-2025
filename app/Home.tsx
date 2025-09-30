@@ -2,7 +2,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function Home() {
   const [historyEntry, setHistoryEntry] = useState('');
@@ -28,7 +28,7 @@ export default function Home() {
       <View style={styles.navigationSection}>
         <Text style={styles.sectionTitle}>📄 Resume & Location</Text>
         <Text style={styles.sectionDescription}>
-          Upload your resume and provide location for personalized assistance
+          Upload your resume and provide your email for personalized assistance
         </Text>
         
         {/* Resume Upload Button */}
@@ -43,7 +43,7 @@ export default function Home() {
         {/* Resume Location Button */}
         <TouchableOpacity style={styles.locationButton} onPress={navigateToResumeLocation}>
           <Ionicons name="location" size={20} color="#ffffff" />
-          <Text style={styles.locationButtonText}>Enter Location</Text>
+          <Text style={styles.locationButtonText}>Get Mail ID</Text>
           <Ionicons name="arrow-forward" size={16} color="#ffffff" />
         </TouchableOpacity>
       </View>
@@ -61,21 +61,6 @@ export default function Home() {
         </TouchableOpacity>
         
         <View style={styles.divider} />
-        
-        <Text style={styles.subsectionTitle}>Quick Entry</Text>
-        <TextInput
-          placeholder="Enter history detail"
-          value={historyEntry}
-          onChangeText={setHistoryEntry}
-          style={styles.textInput}
-          placeholderTextColor="#64748b"
-        />
-        <TouchableOpacity 
-          style={styles.saveButton} 
-          onPress={() => console.log(historyEntry)}
-        >
-          <Text style={styles.saveButtonText}>Save Entry</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );

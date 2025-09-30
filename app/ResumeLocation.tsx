@@ -2,16 +2,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 const ResumeLocationScreen = () => {
@@ -20,14 +20,14 @@ const ResumeLocationScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{location?: string}>({});
 
-  // Your n8n webhook URL
-  const WEBHOOK_URL = "http://172.29.39.118:5678/webhook-test/01358e77-0252-46c7-80f9-200524927bdc";
+  // Your n8n webhook URL (accessible from React Native)
+  const WEBHOOK_URL = "http://10.173.159.118:5678/webhook-test/01358e77-0252-46c7-80f9-200524927bdc";
 
   const validateForm = () => {
     const newErrors: {location?: string} = {};
     
     if (!location.trim()) {
-      newErrors.location = 'Please enter your location (City, State or Country)';
+      newErrors.location = 'Please Get address';
     }
     
     setErrors(newErrors);
@@ -42,11 +42,11 @@ const ResumeLocationScreen = () => {
     setIsLoading(true);
     
     try {
-      // Create form data for location
+      // Create form data for email
       const formData = new FormData();
       
-      // Add location
-      formData.append('location', location);
+      // Add email
+      formData.append('email', location);
       
       // Send to webhook
       const response = await fetch(WEBHOOK_URL, {
@@ -54,17 +54,33 @@ const ResumeLocationScreen = () => {
         body: formData,
       });
 
-      // Show success message regardless of response status
-      Alert.alert('Success', 'Successfully Sent Message!');
+      // Check if request was successful
+      if (response.ok) {
+        // Show success message
+        Alert.alert('Success', 'Email sent successfully!');
+      } else {
+        // Show error message
+        const errorText = await response.text();
+        console.error('HTTP Error:', response.status, errorText);
+        Alert.alert(
+          'Submission Failed',
+          `Server returned error ${response.status}. Please check your n8n webhook and try again.\n\nError: ${errorText}`,
+          [{ text: 'OK' }]
+        );
+      }
       
       // Navigate to Home page
       router.push('/Home');
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Submit error:', error);
       
-      // Still show success message even if there's an error
-      Alert.alert('Success', 'Successfully Sent Message!');
+      // Show error message
+      Alert.alert(
+        'Connection Error',
+        `Failed to send email. Please check your network connection and try again.\n\nError: ${error.message}`,
+        [{ text: 'OK' }]
+      );
       
       // Navigate to Home page as fallback
       router.push('/Home');
@@ -84,21 +100,21 @@ const ResumeLocationScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Ionicons name="location" size={60} color="#06b6d4" />
-          <Text style={styles.title}>Enter Your Location</Text>
+          <Ionicons name="mail" size={60} color="#06b6d4" />
+          <Text style={styles.title}>Get Email</Text>
           <Text style={styles.subtitle}>
-            Please provide your location information to get started
+            Please provide specific topic or Location Name
           </Text>
         </View>
 
         <View style={styles.form}>
-          {/* Location Input Section */}
+          {/* Email Input Section */}
           <View style={styles.formGroup}>
             <Text style={styles.label}>
-              Location <Text style={styles.required}>*</Text>
+              Email Address <Text style={styles.required}>*</Text>
             </Text>
             <Text style={styles.helperText}>
-              Enter your City, State or Country
+              Get address
             </Text>
             <TextInput
               style={[styles.input, errors.location && styles.errorBorder]}
@@ -109,9 +125,10 @@ const ResumeLocationScreen = () => {
                   setErrors(prev => ({ ...prev, location: undefined }));
                 }
               }}
-              placeholder="e.g., San Francisco, CA or United States"
+              placeholder="Enter specific details/Location"
               placeholderTextColor="#64748b"
-              autoCapitalize="words"
+              keyboardType="email-address"
+              autoCapitalize="none"
             />
             {errors.location && (
               <Text style={styles.errorText}>{errors.location}</Text>
@@ -128,7 +145,7 @@ const ResumeLocationScreen = () => {
               <ActivityIndicator size="small" color="#ffffff" />
             ) : (
               <>
-                <Text style={styles.submitButtonText}>Send Location</Text>
+                <Text style={styles.submitButtonText}>Send Email</Text>
                 <Ionicons name="arrow-forward" size={20} color="#ffffff" />
               </>
             )}
@@ -138,7 +155,7 @@ const ResumeLocationScreen = () => {
           <View style={styles.infoCard}>
             <Ionicons name="information-circle" size={20} color="#06b6d4" />
             <Text style={styles.infoText}>
-              Your location will be used to provide personalized assistance in the chat.
+              Your email will be used to provide personalized assistance in the chat.
             </Text>
           </View>
         </View>

@@ -7,7 +7,7 @@ const FormData = require('form-data');
 const fetch = require('node-fetch');
 const fs = require('fs');
 
-const WEBHOOK_URL = "http://172.29.39.118:5678/webhook-test/01358e77-0252-46c7-80f9-200524927bdc";
+const WEBHOOK_URL = "http://10.173.159.118:5678/webhook-test/01358e77-0252-46c7-80f9-200524927bdc";
 
 async function testWebhook() {
   console.log('🔍 Testing n8n webhook connection...');

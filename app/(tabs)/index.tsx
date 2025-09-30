@@ -15,9 +15,9 @@ import { addMessageToHistory, getChatHistory, Message } from '../services/storag
 
 // ====== CONFIG ======
 // Replace this with your n8n webhook URL
-// IMPORTANT: replace 192.168.X.X with your actual computer’s local IP address (find using ipconfig if on Windows)
+// IMPORTANT: replace 192.168.X.X with your actual computer's local IP address (find using ipconfig if on Windows)
 const WEBHOOK_URL =
-  "http://172.29.39.118:5678/webhook-test/01358e77-0252-46c7-80f9-200524927bdc"; 
+  "http://10.173.159.118:5678/webhook-test/01358e77-0252-46c7-80f9-200524927bdc"; 
 const REQUEST_BODY_KEY = "message";
 
 const ChatScreen = () => {
@@ -69,6 +69,16 @@ const ChatScreen = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ [REQUEST_BODY_KEY]: originalInput }),
       });
+
+      // Check if request was successful
+      if (!response.ok) {
+        let errorMessage = `Server returned error ${response.status}`;
+        if (response.status === 404) {
+          errorMessage = 'Webhook not found. Please make sure you have clicked "Execute Workflow" in n8n, or switch to production mode.';
+        }
+        
+        throw new Error(errorMessage);
+      }
 
       let replyText;
       const contentType = response.headers.get("content-type");

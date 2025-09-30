@@ -20,8 +20,11 @@ const ResumeUploadScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{resume?: string}>({});
 
-  // Your n8n webhook URL
-  const WEBHOOK_URL = "http://172.29.39.118:5678/webhook-test/01358e77-0252-46c7-80f9-200524927bdc";
+  // Your n8n webhook URL (accessible from React Native)
+  // Test URL: requires clicking "Execute Workflow" in n8n before each call
+  // Production URL: requires activating workflow in n8n (recommended)
+  const WEBHOOK_URL = "http://10.173.159.118:5678/webhook-test/01358e77-0252-46c7-80f9-200524927bdc";
+  // const WEBHOOK_URL = "http://10.173.159.118:5678/webhook/01358e77-0252-46c7-80f9-200524927bdc"; // Production (activate workflow first)
   
   // Test connection to webhook
   const testWebhookConnection = async () => {
@@ -31,27 +34,36 @@ const ResumeUploadScreen = () => {
       // Create a simple test payload
       const testFormData = new FormData();
       testFormData.append('test_connection', 'true');
-      testFormData.append('message', 'Connection test from React Native app');
+      testFormData.append('message', 'Connection test from Resume screen');
+      testFormData.append('timestamp', new Date().toISOString());
       
       const response = await fetch(WEBHOOK_URL, {
-        method: 'POST', // Use POST as your webhook expects
+        method: 'POST',
         body: testFormData,
       });
       
       console.log('Webhook test response status:', response.status);
-      console.log('Webhook test response headers:', response.headers);
+      console.log('Webhook test response headers:', Object.fromEntries(response.headers.entries()));
       
-      // Consider both 200 and 404 as successful connection (404 means n8n is running but webhook might not be active)
+      // Consider 200, 201, 202 as successful connection
       const isConnected = response.status === 200 || response.status === 201 || response.status === 202;
       
       if (isConnected) {
         const responseText = await response.text();
         console.log('Webhook test response body:', responseText);
+      } else {
+        const errorText = await response.text();
+        console.log('Webhook test error response:', response.status, errorText);
       }
       
       return isConnected;
-    } catch (error) {
+    } catch (error: any) {
       console.log('Webhook connection test failed:', error);
+      console.log('Error details:', {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      });
       return false;
     }
   };
@@ -142,9 +154,14 @@ const ResumeUploadScreen = () => {
         const errorText = await response.text();
         console.error('HTTP Error:', response.status, errorText);
         
+        let errorMessage = errorText;
+        if (response.status === 404) {
+          errorMessage = 'Webhook not found. Please make sure you have clicked "Execute Workflow" in n8n, or switch to production mode.';
+        }
+        
         Alert.alert(
           'Upload Failed',
-          `Server returned error ${response.status}. Please check your n8n webhook and try again.\n\nError: ${errorText}`,
+          `Server returned error ${response.status}. Please check your n8n webhook and try again.\n\nError: ${errorMessage}`,
           [
             { text: 'Retry', onPress: () => setIsLoading(false) },
             { text: 'Go Back', onPress: () => router.push('/Home') }
@@ -162,7 +179,7 @@ const ResumeUploadScreen = () => {
         errorMessage = `Cannot connect to n8n webhook.
 
 Please check:
-• n8n is running on 172.29.39.118:5678
+• n8n is running on localhost:5678
 • Webhook URL is correct
 • Network connectivity
 • Firewall settings
@@ -274,8 +291,8 @@ URL: ${WEBHOOK_URL}`;
               Alert.alert(
                 'Connection Test',
                 isConnected 
-                  ? 'Successfully connected to n8n webhook at 172.29.39.118:5678!' 
-                  : 'Failed to connect to n8n webhook. Please check if n8n is running on 172.29.39.118:5678 and the webhook is active.',
+                  ? 'Successfully connected to n8n webhook at localhost:5678!' 
+                  : 'Failed to connect to n8n webhook.\n\nPossible issues:\n• n8n is not running on localhost:5678\n• Webhook URL might be incorrect\n• React Native app cannot reach localhost (try using your computer\'s IP address instead)\n• Network connectivity issues\n\nCheck console logs for detailed error information.',
                 [{ text: 'OK' }]
               );
             }}
