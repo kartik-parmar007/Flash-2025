@@ -1,3 +1,5 @@
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -5,19 +7,21 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { COLORS, COMMON_STYLES, SPACING } from '../../constants/theme';
 import { addMessageToHistory, getChatHistory, Message } from '../services/storage';
 
 // ====== CONFIG ======
 // Replace this with your n8n webhook URL
 // IMPORTANT: replace 192.168.X.X with your actual computer's local IP address (find using ipconfig if on Windows)
 const WEBHOOK_URL =
-  "http://10.173.159.118:5678/webhook-test/01358e77-0252-46c7-80f9-200524927bdc"; 
+  "http://10.173.159.118:5678/webhook-test/01358e77-0252-46c7-80f9-200524927bdc";
 const REQUEST_BODY_KEY = "message";
 
 const ChatScreen = () => {
@@ -58,7 +62,7 @@ const ChatScreen = () => {
     };
     setMessages((prev) => [...prev, userMessage]);
     await addMessageToHistory(sessionId, userMessage);
-    
+
     const originalInput = input;
     setInput("");
     setIsTyping(true);
@@ -76,7 +80,7 @@ const ChatScreen = () => {
         if (response.status === 404) {
           errorMessage = 'Webhook not found. Please make sure you have clicked "Execute Workflow" in n8n, or switch to production mode.';
         }
-        
+
         throw new Error(errorMessage);
       }
 
@@ -127,103 +131,160 @@ const ChatScreen = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
-    >
-      <ScrollView
-        ref={scrollViewRef}
-        style={styles.log}
-        contentContainerStyle={styles.logContent}
-        onContentSizeChange={() =>
-          scrollViewRef.current?.scrollToEnd({ animated: true })
-        }
+    <LinearGradient colors={COLORS.background} style={styles.container}>
+      <StatusBar barStyle="light-content" />
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
-        {messages.map((msg, index) => (
-          <View key={index} style={[styles.msg, styles[msg.role]]}>
-            <Text style={styles.msgText}>{msg.text}</Text>
-            <Text style={styles.time}>{msg.time}</Text>
-          </View>
-        ))}
-        {isTyping && (
-          <View style={[styles.msg, styles.bot]}>
-            <ActivityIndicator size="small" color="#9ca3af" />
-          </View>
-        )}
-      </ScrollView>
-      <View style={styles.composer}>
-        <TextInput
-          style={styles.input}
-          value={input}
-          onChangeText={setInput}
-          placeholder="Type your message…"
-          placeholderTextColor="#94a3b8"
-          multiline
-        />
-        <TouchableOpacity
-          style={styles.sendButton}
-          onPress={sendMessage}
-          disabled={isTyping}
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.log}
+          contentContainerStyle={styles.logContent}
+          onContentSizeChange={() =>
+            scrollViewRef.current?.scrollToEnd({ animated: true })
+          }
         >
-          <Text style={styles.sendButtonText}>➤</Text>
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+          {messages.map((msg, index) => (
+            <View key={index} style={[
+              styles.msg,
+              msg.role === 'user' ? styles.userMsg : styles.botMsg
+            ]}>
+              {msg.role === 'user' ? (
+                <LinearGradient
+                  colors={[COLORS.secondary, COLORS.primary]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.gradientBubble}
+                >
+                  <Text style={styles.msgText}>{msg.text}</Text>
+                  <Text style={[styles.time, { color: 'rgba(255,255,255,0.7)' }]}>{msg.time}</Text>
+                </LinearGradient>
+              ) : (
+                <View style={styles.glassBubble}>
+                  <Text style={styles.msgText}>{msg.text}</Text>
+                  <Text style={styles.time}>{msg.time}</Text>
+                </View>
+              )}
+            </View>
+          ))}
+          {isTyping && (
+            <View style={[styles.msg, styles.botMsg]}>
+              <View style={styles.glassBubble}>
+                <ActivityIndicator size="small" color={COLORS.text.secondary} />
+              </View>
+            </View>
+          )}
+        </ScrollView>
+        <View style={styles.composer}>
+          <TextInput
+            style={styles.input}
+            value={input}
+            onChangeText={setInput}
+            placeholder="Type your message…"
+            placeholderTextColor={COLORS.text.muted}
+            multiline
+          />
+          <TouchableOpacity
+            style={styles.sendButtonWrapper}
+            onPress={sendMessage}
+            disabled={isTyping}
+          >
+            <LinearGradient
+              colors={[COLORS.secondary, COLORS.primary]}
+              style={styles.sendButton}
+            >
+              <Ionicons name="send" size={20} color="#fff" />
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0f172a", paddingTop: Platform.OS === "android" ? 40 : 20 },
-  log: { flex: 1, padding: 18 },
-  logContent: { paddingBottom: 10 },
+  container: {
+    flex: 1,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  log: {
+    flex: 1,
+    padding: SPACING.m,
+  },
+  logContent: {
+    paddingBottom: SPACING.m,
+  },
   msg: {
+    marginBottom: SPACING.m,
     maxWidth: "80%",
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 14,
   },
-  user: {
+  userMsg: {
     alignSelf: "flex-end",
-    backgroundColor: "#06b6d4",
-    borderBottomRightRadius: 6,
   },
-  bot: {
+  botMsg: {
     alignSelf: "flex-start",
-    backgroundColor: "#1e293b",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.06)",
-    borderBottomLeftRadius: 6,
   },
-  msgText: { color: "#e5e7eb" },
-  time: { fontSize: 11, color: "#94a3b8", marginTop: 6, textAlign: "right" },
+  gradientBubble: {
+    padding: 12,
+    borderRadius: 20,
+    borderBottomRightRadius: 4,
+    ...COMMON_STYLES.shadow,
+  },
+  glassBubble: {
+    padding: 12,
+    borderRadius: 20,
+    borderBottomLeftRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  msgText: {
+    color: COLORS.text.primary,
+    fontSize: 16,
+    lineHeight: 22,
+  },
+  time: {
+    fontSize: 11,
+    color: COLORS.text.secondary,
+    marginTop: 6,
+    textAlign: "right"
+  },
   composer: {
     flexDirection: "row",
-    padding: 14,
+    padding: SPACING.m,
+    paddingBottom: Platform.OS === 'ios' ? 30 : SPACING.m,
     borderTopWidth: 1,
-    borderTopColor: "rgba(255, 255, 255, 0.08)",
-    backgroundColor: "#0b1220",
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(15, 12, 41, 0.9)',
   },
   input: {
     flex: 1,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.1)",
-    backgroundColor: "#0a101d",
-    color: "#e5e7eb",
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    color: COLORS.text.primary,
     marginRight: 10,
-    maxHeight: 120,
+    maxHeight: 100,
+    fontSize: 16,
+  },
+  sendButtonWrapper: {
+    borderRadius: 24,
+    ...COMMON_STYLES.shadow,
   },
   sendButton: {
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: "#06b6d4",
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     justifyContent: "center",
     alignItems: "center",
   },
-  sendButtonText: { color: "#00212a", fontWeight: "700", fontSize: 18 },
 });
 
 export default ChatScreen;

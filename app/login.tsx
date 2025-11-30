@@ -1,26 +1,26 @@
-import { router } from 'expo-router';
-import React, { useState, useRef, useEffect } from 'react';
-import {
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  View,
-  Vibration,
-  Dimensions,
-  Text,
-} from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
+import LottieView from 'lottie-react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Vibration,
+  View,
+} from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
-  useSharedValue,
   useAnimatedStyle,
+  useSharedValue,
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import LottieView from 'lottie-react-native';
 
 const { width, height } = Dimensions.get('window');
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
@@ -52,7 +52,7 @@ const LoginScreen = () => {
   const startLockoutTimer = () => {
     setIsLocked(true);
     setLockoutTimer(30);
-    
+
     timerRef.current = setInterval(() => {
       setLockoutTimer((prev) => {
         if (prev <= 1) {
@@ -79,7 +79,7 @@ const LoginScreen = () => {
 
   const handlePinInput = (text: string) => {
     if (isLocked) return;
-    
+
     const numericText = text.replace(/[^0-9]/g, '');
     setPassword(numericText);
 
@@ -96,15 +96,15 @@ const LoginScreen = () => {
             withTiming(-10, { duration: 50 }),
             withTiming(0, { duration: 50 })
           );
-          
+
           const newFailedAttempts = failedAttempts + 1;
           setFailedAttempts(newFailedAttempts);
-          
+
           if (newFailedAttempts >= 3) {
             // Lock after 3 failed attempts
             startLockoutTimer();
           }
-          
+
           setTimeout(() => setPassword(''), 400);
         }
       }, 200);
@@ -148,13 +148,13 @@ const LoginScreen = () => {
               )}
 
               {/* PIN Boxes */}
-              <TouchableOpacity 
-                onPress={() => !isLocked && textInputRef.current?.focus()} 
+              <TouchableOpacity
+                onPress={() => !isLocked && textInputRef.current?.focus()}
                 activeOpacity={1}
                 disabled={isLocked}
               >
                 <Animated.View style={[
-                  styles.pinContainer, 
+                  styles.pinContainer,
                   pinAnimatedStyle,
                   isLocked && styles.lockedContainer
                 ]}>
@@ -162,7 +162,7 @@ const LoginScreen = () => {
                     <View
                       key={i}
                       style={[
-                        styles.pinBox, 
+                        styles.pinBox,
                         password[i] && styles.filledPinBox,
                         isLocked && styles.lockedPinBox
                       ]}
@@ -195,18 +195,29 @@ const LoginScreen = () => {
               {/* Button */}
               <AnimatedTouchable
                 style={[
-                  styles.button, 
+                  styles.buttonContainer,
                   buttonAnimatedStyle,
                   (isLocked || password.length !== 4 || isLoading) && styles.disabledButton
                 ]}
                 onPress={handleLogin}
+                onPressIn={() => {
+                  buttonScale.value = withTiming(0.95, { duration: 100 });
+                }}
+                onPressOut={() => {
+                  buttonScale.value = withTiming(1, { duration: 100 });
+                }}
                 disabled={password.length !== 4 || isLoading || isLocked}
               >
-                <Feather 
-                  name="arrow-right" 
-                  size={22} 
-                  color={isLocked ? '#ccc' : '#fff'} 
-                />
+                <LinearGradient
+                  colors={isLocked ? ['#ccc', '#999'] : ['#6366f1', '#4f46e5']}
+                  style={styles.buttonGradient}
+                >
+                  <Feather
+                    name="arrow-right"
+                    size={24}
+                    color="#fff"
+                  />
+                </LinearGradient>
               </AnimatedTouchable>
             </View>
           ) : (
@@ -238,9 +249,11 @@ const styles = StyleSheet.create({
     padding: 30,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowOpacity: 0.2,
+    shadowRadius: 25,
+    elevation: 15,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.8)',
   },
   title: {
     fontSize: 26,
@@ -272,9 +285,10 @@ const styles = StyleSheet.create({
     width: 55,
     height: 55,
     marginHorizontal: 6,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#ccc',
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#e0e0e0',
+    backgroundColor: '#f9fafb',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -303,22 +317,23 @@ const styles = StyleSheet.create({
     position: 'absolute',
     opacity: 0,
   },
-  button: {
-    marginTop: 10,
-    padding: 15,
-    width: 70,
-    height: 70,
+  buttonContainer: {
+    marginTop: 20,
     borderRadius: 35,
-    backgroundColor: '#6366f1',
-    justifyContent: 'center',
-    alignItems: 'center',
     shadowColor: '#6366f1',
     shadowOpacity: 0.4,
     shadowRadius: 15,
     elevation: 8,
   },
+  buttonGradient: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   disabledButton: {
-    backgroundColor: '#e5e7eb',
+    opacity: 0.7,
     shadowOpacity: 0.1,
   },
   successContainer: {

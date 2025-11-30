@@ -1,17 +1,20 @@
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
   Alert,
   Animated,
-  StatusBar,
+  FlatList,
   SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { getChatHistory, ChatSession, deleteChatSession } from './services/storage';
+import { COLORS, COMMON_STYLES, SPACING } from '../constants/theme';
+import { ChatSession, deleteChatSession, getChatHistory } from './services/storage';
 
 const HistoryScreen = () => {
   const [history, setHistory] = useState<ChatSession[]>([]);
@@ -70,7 +73,7 @@ const HistoryScreen = () => {
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
+
     if (days === 0) {
       return `Today, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     } else if (days === 1) {
@@ -78,8 +81,8 @@ const HistoryScreen = () => {
     } else if (days < 7) {
       return `${days} days ago`;
     } else {
-      return date.toLocaleDateString([], { 
-        month: 'short', 
+      return date.toLocaleDateString([], {
+        month: 'short',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
@@ -90,7 +93,7 @@ const HistoryScreen = () => {
   const renderChatItem = ({ item, index }: { item: ChatSession; index: number }) => {
     const sessionDate = formatDate(item.id);
     const animatedValue = new Animated.Value(0);
-    
+
     const handlePressIn = () => {
       Animated.spring(animatedValue, {
         toValue: 1,
@@ -119,22 +122,27 @@ const HistoryScreen = () => {
           onPressOut={handlePressOut}
           activeOpacity={1}
         >
-          <View style={styles.sessionContent}>
-            <View style={styles.sessionIcon}>
-              <Text style={styles.sessionIconText}>💬</Text>
-            </View>
-            <View style={styles.sessionInfo}>
-              <Text style={styles.sessionTitle}>Chat Session</Text>
-              <Text style={styles.sessionDate}>{sessionDate}</Text>
-            </View>
-          </View>
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => handleDeleteChat(item.id, sessionDate)}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          <LinearGradient
+            colors={['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.02)']}
+            style={styles.sessionGradient}
           >
-            <Text style={styles.deleteButtonText}>🗑️</Text>
-          </TouchableOpacity>
+            <View style={styles.sessionContent}>
+              <View style={styles.sessionIcon}>
+                <Ionicons name="chatbubble-ellipses" size={20} color={COLORS.primary} />
+              </View>
+              <View style={styles.sessionInfo}>
+                <Text style={styles.sessionTitle}>Chat Session</Text>
+                <Text style={styles.sessionDate}>{sessionDate}</Text>
+              </View>
+            </View>
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => handleDeleteChat(item.id, sessionDate)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="trash-outline" size={18} color={COLORS.error} />
+            </TouchableOpacity>
+          </LinearGradient>
         </TouchableOpacity>
       </Animated.View>
     );
@@ -142,16 +150,16 @@ const HistoryScreen = () => {
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
-      <Text style={styles.emptyIcon}>💭</Text>
+      <Ionicons name="chatbubbles-outline" size={64} color={COLORS.text.muted} style={{ opacity: 0.5, marginBottom: 16 }} />
       <Text style={styles.emptyTitle}>No Chat History</Text>
       <Text style={styles.emptySubtitle}>Start a new conversation to begin</Text>
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-      <View style={styles.container}>
+    <LinearGradient colors={COLORS.background} style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="light-content" />
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Chat History</Text>
           <Text style={styles.headerSubtitle}>
@@ -169,72 +177,76 @@ const HistoryScreen = () => {
         />
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={styles.newChatButton} 
+          <TouchableOpacity
             onPress={handleNewChat}
             activeOpacity={0.8}
+            style={styles.newChatButtonWrapper}
           >
-            <Text style={styles.newChatIcon}>✨</Text>
-            <Text style={styles.newChatButtonText}>New Chat</Text>
+            <LinearGradient
+              colors={[COLORS.secondary, COLORS.primary]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.newChatButton}
+            >
+              <Ionicons name="add" size={24} color="#fff" style={{ marginRight: 8 }} />
+              <Text style={styles.newChatButtonText}>New Chat</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#0f172a',
-  },
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingHorizontal: SPACING.l,
+    paddingVertical: SPACING.l,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   headerTitle: {
-    marginTop: 20,
-    color: '#d8e0e8ff',
+    marginTop: SPACING.m,
+    color: COLORS.text.primary,
     fontSize: 28,
     fontWeight: '700',
     marginBottom: 4,
   },
   headerSubtitle: {
-    color: '#a2a9b3ff',
+    color: COLORS.text.secondary,
     fontSize: 14,
     fontWeight: '500',
   },
   listContainer: {
-    paddingTop: 8,
+    paddingTop: SPACING.s,
+    paddingBottom: 100,
   },
   emptyListContainer: {
     flex: 1,
     justifyContent: 'center',
   },
   sessionItemWrapper: {
-    marginHorizontal: 16,
-    marginVertical: 4,
+    marginHorizontal: SPACING.m,
+    marginVertical: SPACING.xs,
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: COLORS.card.border,
+    ...COMMON_STYLES.shadow,
   },
   sessionItemContainer: {
+    backgroundColor: 'transparent',
+  },
+  sessionGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1e293b',
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    padding: SPACING.m,
   },
   sessionContent: {
     flex: 1,
@@ -245,66 +257,53 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#334155',
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
-  },
-  sessionIconText: {
-    fontSize: 18,
   },
   sessionInfo: {
     flex: 1,
   },
   sessionTitle: {
-    color: '#f1f5f9',
+    color: COLORS.text.primary,
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 2,
   },
   sessionDate: {
-    color: '#94a3b8',
-    fontSize: 14,
+    color: COLORS.text.secondary,
+    fontSize: 13,
     fontWeight: '400',
   },
   deleteButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#dc262620',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 12,
   },
-  deleteButtonText: {
-    fontSize: 16,
-  },
   buttonContainer: {
-    padding: 20,
-    paddingTop: 12,
+    position: 'absolute',
+    bottom: SPACING.l,
+    left: SPACING.l,
+    right: SPACING.l,
+  },
+  newChatButtonWrapper: {
+    borderRadius: 16,
+    ...COMMON_STYLES.shadow,
   },
   newChatButton: {
-    backgroundColor: '#06b6d4',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 18,
     borderRadius: 16,
-    shadowColor: '#06b6d4',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  newChatIcon: {
-    fontSize: 18,
-    marginRight: 8,
   },
   newChatButtonText: {
-    color: '#0f172a',
+    color: '#fff',
     fontWeight: '700',
     fontSize: 16,
   },
@@ -312,20 +311,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 40,
   },
-  emptyIcon: {
-    fontSize: 64,
-    marginBottom: 16,
-    opacity: 0.6,
-  },
   emptyTitle: {
-    color: '#f1f5f9',
+    color: COLORS.text.primary,
     fontSize: 20,
     fontWeight: '600',
     marginBottom: 8,
     textAlign: 'center',
   },
   emptySubtitle: {
-    color: '#94a3b8',
+    color: COLORS.text.secondary,
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,

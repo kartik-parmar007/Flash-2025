@@ -1,11 +1,10 @@
-// app/Home.js
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { COLORS, COMMON_STYLES, SPACING } from '../constants/theme';
 
 export default function Home() {
-  const [historyEntry, setHistoryEntry] = useState('');
   const router = useRouter();
 
   const navigateToResume = () => {
@@ -21,182 +20,135 @@ export default function Home() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>🏠 Home Page</Text>
+    <LinearGradient colors={COLORS.background} style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.title}>Welcome Home</Text>
+        <Text style={styles.subtitle}>What would you like to do today?</Text>
 
-      {/* Navigation Section */}
-      <View style={styles.navigationSection}>
-        <Text style={styles.sectionTitle}>📄 Resume & Location</Text>
-        <Text style={styles.sectionDescription}>
-          Upload your resume and provide your email for personalized assistance
-        </Text>
-        
-        {/* Resume Upload Button */}
-        <TouchableOpacity style={styles.resumeButton} onPress={navigateToResume}>
-          <Ionicons name="document-text" size={20} color="#ffffff" />
-          <Text style={styles.resumeButtonText}>Upload Resume</Text>
-          <Ionicons name="arrow-forward" size={16} color="#ffffff" />
-        </TouchableOpacity>
-        
-        <View style={styles.buttonSpacing} />
-        
-        {/* Resume Location Button */}
-        <TouchableOpacity style={styles.locationButton} onPress={navigateToResumeLocation}>
-          <Ionicons name="location" size={20} color="#ffffff" />
-          <Text style={styles.locationButtonText}>Get Mail ID</Text>
-          <Ionicons name="arrow-forward" size={16} color="#ffffff" />
-        </TouchableOpacity>
-      </View>
+        {/* Navigation Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Services</Text>
 
-      {/* History Section */}
-      <View style={styles.historySection}>
-        <Text style={styles.sectionTitle}>🕘 History Section</Text>
-        <Text style={styles.sectionDescription}>
-          View your chat history and previous conversations
-        </Text>
-        <TouchableOpacity style={styles.historyButton} onPress={navigateToHistory}>
-          <Ionicons name="time" size={20} color="#ffffff" />
-          <Text style={styles.historyButtonText}>View History</Text>
-          <Ionicons name="arrow-forward" size={16} color="#ffffff" />
-        </TouchableOpacity>
-        
-        <View style={styles.divider} />
-      </View>
-    </View>
+          <TouchableOpacity style={styles.card} onPress={navigateToResume}>
+            <LinearGradient
+              colors={['rgba(6, 182, 212, 0.2)', 'rgba(6, 182, 212, 0.05)']}
+              style={styles.cardGradient}
+            >
+              <View style={[styles.iconContainer, { backgroundColor: 'rgba(6, 182, 212, 0.2)' }]}>
+                <Ionicons name="document-text" size={24} color="#06b6d4" />
+              </View>
+              <View style={styles.cardContent}>
+                <Text style={styles.cardTitle}>Upload Resume</Text>
+                <Text style={styles.cardDescription}>Get personalized assistance based on your resume</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={24} color={COLORS.text.secondary} />
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.card} onPress={navigateToResumeLocation}>
+            <LinearGradient
+              colors={['rgba(245, 158, 11, 0.2)', 'rgba(245, 158, 11, 0.05)']}
+              style={styles.cardGradient}
+            >
+              <View style={[styles.iconContainer, { backgroundColor: 'rgba(245, 158, 11, 0.2)' }]}>
+                <Ionicons name="location" size={24} color="#f59e0b" />
+              </View>
+              <View style={styles.cardContent}>
+                <Text style={styles.cardTitle}>Get Mail ID</Text>
+                <Text style={styles.cardDescription}>Find email IDs based on location and role</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={24} color={COLORS.text.secondary} />
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+
+        {/* History Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Recent Activity</Text>
+
+          <TouchableOpacity style={styles.card} onPress={navigateToHistory}>
+            <LinearGradient
+              colors={['rgba(139, 92, 246, 0.2)', 'rgba(139, 92, 246, 0.05)']}
+              style={styles.cardGradient}
+            >
+              <View style={[styles.iconContainer, { backgroundColor: 'rgba(139, 92, 246, 0.2)' }]}>
+                <Ionicons name="time" size={24} color="#8b5cf6" />
+              </View>
+              <View style={styles.cardContent}>
+                <Text style={styles.cardTitle}>View History</Text>
+                <Text style={styles.cardDescription}>Access your past conversations and chats</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={24} color={COLORS.text.secondary} />
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#0f172a',
+  },
+  scrollContent: {
+    padding: SPACING.l,
+    paddingTop: 60,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#e2e8f0',
-    marginBottom: 30,
-    textAlign: 'center',
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: COLORS.text.primary,
+    marginBottom: SPACING.s,
   },
-  navigationSection: {
-    backgroundColor: '#1e293b',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 30,
-    borderWidth: 1,
-    borderColor: 'rgba(6, 182, 212, 0.2)',
+  subtitle: {
+    fontSize: 16,
+    color: COLORS.text.secondary,
+    marginBottom: SPACING.xl,
   },
-  historySection: {
-    backgroundColor: '#1e293b',
-    borderRadius: 12,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+  section: {
+    marginBottom: SPACING.xl,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#e2e8f0',
-    marginBottom: 8,
+    color: COLORS.text.primary,
+    marginBottom: SPACING.m,
+    marginLeft: SPACING.xs,
   },
-  sectionDescription: {
-    fontSize: 14,
-    color: '#94a3b8',
-    marginBottom: 16,
-    lineHeight: 20,
-  },
-  resumeButton: {
-    backgroundColor: '#06b6d4',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    borderRadius: 10,
-    shadowColor: '#06b6d4',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  resumeButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginHorizontal: 8,
-  },
-  buttonSpacing: {
-    height: 12,
-  },
-  locationButton: {
-    backgroundColor: '#f59e0b',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    borderRadius: 10,
-    shadowColor: '#f59e0b',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  locationButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginHorizontal: 8,
-  },
-  textInput: {
-    backgroundColor: '#0f172a',
+  card: {
+    marginBottom: SPACING.m,
+    borderRadius: 16,
+    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#e2e8f0',
-    marginBottom: 16,
+    borderColor: COLORS.card.border,
+    ...COMMON_STYLES.shadow,
   },
-  saveButton: {
-    backgroundColor: '#10b981',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-  historyButton: {
-    backgroundColor: '#8b5cf6',
+  cardGradient: {
     flexDirection: 'row',
     alignItems: 'center',
+    padding: SPACING.m,
+  },
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
     justifyContent: 'center',
-    padding: 16,
-    borderRadius: 10,
-    shadowColor: '#8b5cf6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-    marginBottom: 20,
+    alignItems: 'center',
+    marginRight: SPACING.m,
   },
-  historyButtonText: {
+  cardContent: {
+    flex: 1,
+  },
+  cardTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
-    marginHorizontal: 8,
+    color: COLORS.text.primary,
+    marginBottom: 4,
   },
-  divider: {
-    height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    marginBottom: 16,
-  },
-  subsectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#e2e8f0',
-    marginBottom: 12,
+  cardDescription: {
+    fontSize: 13,
+    color: COLORS.text.secondary,
+    lineHeight: 18,
   },
 });

@@ -20,19 +20,20 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack initialRouteName="login">
-        <Stack.Screen 
-  name="history" 
-  options={{
-    title: 'Chat History',
-    headerStyle: {
-      backgroundColor: '#3c0ebcff',
-    },
-    headerTintColor: '#c2b3b3ff', // For back button and title color
-    headerTitleAlign: 'center', // This centers the title
-    headerShown: false, // This hides the entire header
-  }} 
-/>
+      <Stack initialRouteName="loading">
+        <Stack.Screen
+          name="history"
+          options={{
+            title: 'Chat History',
+            headerStyle: {
+              backgroundColor: '#3c0ebcff',
+            },
+            headerTintColor: '#c2b3b3ff', // For back button and title color
+            headerTitleAlign: 'center', // This centers the title
+            headerShown: false, // This hides the entire header
+          }}
+        />
+        <Stack.Screen name="loading" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
