@@ -19,6 +19,10 @@ export default function Home() {
     router.push('/history');
   };
 
+  const navigateToImageDetector = () => {
+    router.push('/ImageDetector');
+  };
+
   return (
     <LinearGradient colors={COLORS.background} style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -56,6 +60,22 @@ export default function Home() {
               <View style={styles.cardContent}>
                 <Text style={styles.cardTitle}>Get Mail ID</Text>
                 <Text style={styles.cardDescription}>Find email IDs based on location and role</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={24} color={COLORS.text.secondary} />
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.card} onPress={navigateToImageDetector}>
+            <LinearGradient
+              colors={['rgba(236, 72, 153, 0.2)', 'rgba(236, 72, 153, 0.05)']}
+              style={styles.cardGradient}
+            >
+              <View style={[styles.iconContainer, { backgroundColor: 'rgba(236, 72, 153, 0.2)' }]}>
+                <Ionicons name="images" size={24} color="#ec4899" />
+              </View>
+              <View style={styles.cardContent}>
+                <Text style={styles.cardTitle}>AI Image Detector</Text>
+                <Text style={styles.cardDescription}>Analyze images using AI</Text>
               </View>
               <Ionicons name="chevron-forward" size={24} color={COLORS.text.secondary} />
             </LinearGradient>
