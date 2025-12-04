@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -13,23 +14,24 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { COLORS, COMMON_STYLES, SPACING } from '../constants/theme';
 
 const ResumeLocationScreen = () => {
   const router = useRouter();
   const [location, setLocation] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{location?: string}>({});
+  const [errors, setErrors] = useState<{ location?: string }>({});
 
   // Your n8n webhook URL (accessible from React Native)
-  const WEBHOOK_URL = "http://10.173.159.118:5678/webhook-test/01358e77-0252-46c7-80f9-200524927bdc";
+  const WEBHOOK_URL = "http://10.193.176.118:5678/webhook-test/08a00654-89b7-48d0-96b1-02eebede74ea";
 
   const validateForm = () => {
-    const newErrors: {location?: string} = {};
-    
+    const newErrors: { location?: string } = {};
+
     if (!location.trim()) {
       newErrors.location = 'Please Get address';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -40,14 +42,14 @@ const ResumeLocationScreen = () => {
     }
 
     setIsLoading(true);
-    
+
     try {
       // Create form data for email
       const formData = new FormData();
-      
+
       // Add email
       formData.append('email', location);
-      
+
       // Send to webhook
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
@@ -68,20 +70,20 @@ const ResumeLocationScreen = () => {
           [{ text: 'OK' }]
         );
       }
-      
+
       // Navigate to Home page
       router.push('/Home');
-      
+
     } catch (error: any) {
       console.error('Submit error:', error);
-      
+
       // Show error message
       Alert.alert(
         'Connection Error',
         `Failed to send email. Please check your network connection and try again.\n\nError: ${error.message}`,
         [{ text: 'OK' }]
       );
-      
+
       // Navigate to Home page as fallback
       router.push('/Home');
     } finally {
@@ -90,88 +92,97 @@ const ResumeLocationScreen = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
-    >
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+    <LinearGradient colors={COLORS.background} style={styles.container}>
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
       >
-        <View style={styles.header}>
-          <Ionicons name="mail" size={60} color="#06b6d4" />
-          <Text style={styles.title}>Get Email</Text>
-          <Text style={styles.subtitle}>
-            Please provide specific topic or Location Name
-          </Text>
-        </View>
-
-        <View style={styles.form}>
-          {/* Email Input Section */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>
-              Email Address <Text style={styles.required}>*</Text>
-            </Text>
-            <Text style={styles.helperText}>
-              Get address
-            </Text>
-            <TextInput
-              style={[styles.input, errors.location && styles.errorBorder]}
-              value={location}
-              onChangeText={(text) => {
-                setLocation(text);
-                if (text.trim()) {
-                  setErrors(prev => ({ ...prev, location: undefined }));
-                }
-              }}
-              placeholder="Enter specific details/Location"
-              placeholderTextColor="#64748b"
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            {errors.location && (
-              <Text style={styles.errorText}>{errors.location}</Text>
-            )}
-          </View>
-
-          {/* Submit Button */}
-          <TouchableOpacity
-            style={[styles.submitButton, isLoading && styles.disabledButton]}
-            onPress={handleSubmit}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator size="small" color="#ffffff" />
-            ) : (
-              <>
-                <Text style={styles.submitButtonText}>Send Email</Text>
-                <Ionicons name="arrow-forward" size={20} color="#ffffff" />
-              </>
-            )}
-          </TouchableOpacity>
-
-          {/* Info Card */}
-          <View style={styles.infoCard}>
-            <Ionicons name="information-circle" size={20} color="#06b6d4" />
-            <Text style={styles.infoText}>
-              Your email will be used to provide personalized assistance in the chat.
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.header}>
+            <Ionicons name="mail" size={60} color={COLORS.accent} />
+            <Text style={styles.title}>Get Email</Text>
+            <Text style={styles.subtitle}>
+              Please provide specific topic or Location Name
             </Text>
           </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+          <View style={styles.form}>
+            {/* Email Input Section */}
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>
+                Email Address <Text style={styles.required}>*</Text>
+              </Text>
+              <Text style={styles.helperText}>
+                Get address
+              </Text>
+              <TextInput
+                style={[styles.input, errors.location && styles.errorBorder]}
+                value={location}
+                onChangeText={(text) => {
+                  setLocation(text);
+                  if (text.trim()) {
+                    setErrors(prev => ({ ...prev, location: undefined }));
+                  }
+                }}
+                placeholder="Enter specific details/Location"
+                placeholderTextColor={COLORS.text.muted}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+              {errors.location && (
+                <Text style={styles.errorText}>{errors.location}</Text>
+              )}
+            </View>
+
+            {/* Submit Button */}
+            <TouchableOpacity
+              style={[styles.submitButton, isLoading && styles.disabledButton]}
+              onPress={handleSubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#ffffff" />
+              ) : (
+                <LinearGradient
+                  colors={[COLORS.accent, '#fcd34d']} // Amber gradient
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.gradientButton}
+                >
+                  <Text style={styles.submitButtonText}>Send Email</Text>
+                  <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+                </LinearGradient>
+              )}
+            </TouchableOpacity>
+
+            {/* Info Card */}
+            <View style={styles.infoCard}>
+              <Ionicons name="information-circle" size={20} color={COLORS.accent} />
+              <Text style={styles.infoText}>
+                Your email will be used to provide personalized assistance in the chat.
+              </Text>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+  },
+  keyboardAvoidingView: {
+    flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    padding: 20,
+    padding: SPACING.l,
     paddingTop: Platform.OS === 'android' ? 60 : 40,
   },
   header: {
@@ -181,13 +192,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#e2e8f0',
+    color: COLORS.text.primary,
     marginTop: 16,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#94a3b8',
+    color: COLORS.text.secondary,
     textAlign: 'center',
     paddingHorizontal: 20,
     lineHeight: 22,
@@ -201,48 +212,46 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#e2e8f0',
+    color: COLORS.text.primary,
     marginBottom: 8,
   },
   required: {
-    color: '#ef4444',
+    color: COLORS.error,
   },
   helperText: {
     fontSize: 14,
-    color: '#64748b',
+    color: COLORS.text.muted,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#1e293b',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    color: '#e2e8f0',
+    color: COLORS.text.primary,
   },
   errorBorder: {
-    borderColor: '#ef4444',
+    borderColor: COLORS.error,
   },
   errorText: {
     fontSize: 13,
-    color: '#ef4444',
+    color: COLORS.error,
     marginTop: 6,
   },
   submitButton: {
-    backgroundColor: '#06b6d4',
+    borderRadius: 12,
+    marginTop: 32,
+    marginBottom: 20,
+    overflow: 'hidden',
+    ...COMMON_STYLES.shadow,
+  },
+  gradientButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 18,
-    borderRadius: 12,
-    marginTop: 32,
-    marginBottom: 20,
-    shadowColor: '#06b6d4',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
   },
   disabledButton: {
     opacity: 0.6,
@@ -255,9 +264,9 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(6, 182, 212, 0.1)',
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(6, 182, 212, 0.2)',
+    borderColor: 'rgba(245, 158, 11, 0.2)',
     borderRadius: 12,
     padding: 16,
     marginTop: 8,
@@ -265,7 +274,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: 14,
-    color: '#94a3b8',
+    color: COLORS.text.muted,
     marginLeft: 12,
     lineHeight: 20,
   },

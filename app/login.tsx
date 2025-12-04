@@ -21,6 +21,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
+import { COLORS } from '../constants/theme';
 
 const { width, height } = Dimensions.get('window');
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
@@ -129,12 +130,12 @@ const LoginScreen = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <LinearGradient
-          colors={['#4f46e5', '#6366f1', '#818cf8']}
+          colors={COLORS.background}
           style={styles.gradient}
         >
           {!showSuccess ? (
             <View style={styles.card}>
-              <Ionicons name="lock-closed" size={48} color="#6366f1" style={{ marginBottom: 10 }} />
+              <Ionicons name="lock-closed" size={48} color={COLORS.primary} style={{ marginBottom: 10 }} />
               <Animated.Text style={styles.title}>Welcome Back</Animated.Text>
               <Animated.Text style={styles.subtitle}>
                 {isLocked ? `Account locked. Try again in ${lockoutTimer}s` : 'Enter 4-digit PIN'}
@@ -176,7 +177,7 @@ const LoginScreen = () => {
               {/* Lockout Icon */}
               {isLocked && (
                 <View style={styles.lockoutIconContainer}>
-                  <Ionicons name="time-outline" size={24} color="#ef4444" />
+                  <Ionicons name="time-outline" size={24} color={COLORS.error} />
                 </View>
               )}
 
@@ -209,7 +210,7 @@ const LoginScreen = () => {
                 disabled={password.length !== 4 || isLoading || isLocked}
               >
                 <LinearGradient
-                  colors={isLocked ? ['#ccc', '#999'] : ['#6366f1', '#4f46e5']}
+                  colors={isLocked ? ['#ccc', '#999'] : [COLORS.primary, '#4f46e5']}
                   style={styles.buttonGradient}
                 >
                   <Feather
@@ -244,7 +245,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '85%',
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 25,
     padding: 30,
     alignItems: 'center',
@@ -269,7 +270,7 @@ const styles = StyleSheet.create({
   },
   attemptsText: {
     fontSize: 12,
-    color: '#ef4444',
+    color: COLORS.error,
     marginBottom: 15,
     fontWeight: '600',
   },
@@ -293,19 +294,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   filledPinBox: {
-    borderColor: '#6366f1',
+    borderColor: COLORS.primary,
   },
   lockedPinBox: {
-    borderColor: '#ef4444',
+    borderColor: COLORS.error,
   },
   pinDot: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#6366f1',
+    backgroundColor: COLORS.primary,
   },
   lockedPinDot: {
-    backgroundColor: '#ef4444',
+    backgroundColor: COLORS.error,
   },
   lockoutIconContainer: {
     marginBottom: 20,
@@ -320,7 +321,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     marginTop: 20,
     borderRadius: 35,
-    shadowColor: '#6366f1',
+    shadowColor: COLORS.primary,
     shadowOpacity: 0.4,
     shadowRadius: 15,
     elevation: 8,

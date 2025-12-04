@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -21,7 +21,7 @@ import { addMessageToHistory, getChatHistory, Message } from '../services/storag
 // Replace this with your n8n webhook URL
 // IMPORTANT: replace 192.168.X.X with your actual computer's local IP address (find using ipconfig if on Windows)
 const WEBHOOK_URL =
-  "http://10.173.159.118:5678/webhook-test/01358e77-0252-46c7-80f9-200524927bdc";
+  "http://10.193.176.118:5678/webhook-test/08a00654-89b7-48d0-96b1-02eebede74ea";
 const REQUEST_BODY_KEY = "message";
 
 const ChatScreen = () => {
@@ -133,10 +133,20 @@ const ChatScreen = () => {
   return (
     <LinearGradient colors={COLORS.background} style={styles.container}>
       <StatusBar barStyle="light-content" />
+
+      {/* Custom Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color={COLORS.text.primary} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Chat</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
         <ScrollView
           ref={scrollViewRef}
@@ -207,6 +217,25 @@ const ChatScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.m,
+    paddingTop: Platform.OS === 'android' ? 40 : 50,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(15, 12, 41, 0.5)',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.text.primary,
+  },
+  backButton: {
+    padding: 8,
   },
   keyboardAvoidingView: {
     flex: 1,
