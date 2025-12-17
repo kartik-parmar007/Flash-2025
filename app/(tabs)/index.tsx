@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -21,7 +21,7 @@ import { addMessageToHistory, getChatHistory, Message } from '../services/storag
 // Replace this with your n8n webhook URL
 // IMPORTANT: replace 192.168.X.X with your actual computer's local IP address (find using ipconfig if on Windows)
 const WEBHOOK_URL =
-  "http://10.193.176.118:5678/webhook-test/08a00654-89b7-48d0-96b1-02eebede74ea";
+  "http://10.132.149.118:5678/webhook-test/08a00654-89b7-48d0-96b1-02eebede74ea";
 const REQUEST_BODY_KEY = "message";
 
 const ChatScreen = () => {

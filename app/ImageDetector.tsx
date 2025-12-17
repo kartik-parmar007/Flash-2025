@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -23,7 +23,7 @@ const ImageDetectorScreen = () => {
     const [errors, setErrors] = useState<{ file?: string }>({});
     const [detectionResult, setDetectionResult] = useState<string | null>(null);
 
-    const WEBHOOK_URL = "http://10.193.176.118:5678/webhook-test/08a00654-89b7-48d0-96b1-02eebede74ea";
+    const WEBHOOK_URL = "http://10.132.149.118:5678/webhook-test/08a00654-89b7-48d0-96b1-02eebede74ea";
 
     const pickMedia = async () => {
         try {

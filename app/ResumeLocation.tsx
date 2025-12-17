@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -23,7 +23,7 @@ const ResumeLocationScreen = () => {
   const [errors, setErrors] = useState<{ location?: string }>({});
 
   // Your n8n webhook URL (accessible from React Native)
-  const WEBHOOK_URL = "http://10.193.176.118:5678/webhook-test/08a00654-89b7-48d0-96b1-02eebede74ea";
+  const WEBHOOK_URL = "http://10.132.149.118:5678/webhook-test/08a00654-89b7-48d0-96b1-02eebede74ea";
 
   const validateForm = () => {
     const newErrors: { location?: string } = {};
