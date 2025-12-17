@@ -22,18 +22,11 @@ const ResumeUploadScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ resume?: string }>({});
 
-  // Your n8n webhook URL (accessible from React Native)
-  // Test URL: requires clicking "Execute Workflow" in n8n before each call
-  // Production URL: requires activating workflow in n8n (recommended)
   const WEBHOOK_URL = "http://10.132.149.118:5678/webhook-test/08a00654-89b7-48d0-96b1-02eebede74ea";
-  // const WEBHOOK_URL = "http://10.173.159.118:5678/webhook/01358e77-0252-46c7-80f9-200524927bdc"; // Production (activate workflow first)
 
-  // Test connection to webhook
   const testWebhookConnection = async () => {
     try {
       console.log('Testing webhook connection to:', WEBHOOK_URL);
-
-      // Create a simple test payload
       const testFormData = new FormData();
       testFormData.append('test_connection', 'true');
       testFormData.append('message', 'Connection test from Resume screen');
@@ -44,28 +37,10 @@ const ResumeUploadScreen = () => {
         body: testFormData,
       });
 
-      console.log('Webhook test response status:', response.status);
-      console.log('Webhook test response headers:', Object.fromEntries(response.headers.entries()));
-
-      // Consider 200, 201, 202 as successful connection
       const isConnected = response.status === 200 || response.status === 201 || response.status === 202;
-
-      if (isConnected) {
-        const responseText = await response.text();
-        console.log('Webhook test response body:', responseText);
-      } else {
-        const errorText = await response.text();
-        console.log('Webhook test error response:', response.status, errorText);
-      }
-
       return isConnected;
     } catch (error: any) {
       console.log('Webhook connection test failed:', error);
-      console.log('Error details:', {
-        message: error.message,
-        name: error.name,
-        stack: error.stack
-      });
       return false;
     }
   };
@@ -88,11 +63,9 @@ const ResumeUploadScreen = () => {
 
   const validateForm = () => {
     const newErrors: { resume?: string } = {};
-
     if (!resumeFile) {
       newErrors.resume = 'Please upload your resume';
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -101,14 +74,10 @@ const ResumeUploadScreen = () => {
     if (!validateForm()) {
       return;
     }
-
     setIsLoading(true);
 
     try {
-      // Create form data for file upload
       const formData = new FormData();
-
-      // Add resume file
       if (resumeFile) {
         formData.append('resume', {
           uri: resumeFile.uri,
@@ -117,30 +86,14 @@ const ResumeUploadScreen = () => {
         } as any);
       }
 
-      console.log('Sending resume to webhook:', WEBHOOK_URL);
-      console.log('Resume file details:', {
-        name: resumeFile?.name,
-        size: resumeFile?.size,
-        type: resumeFile?.mimeType
-      });
-
-      // Send to webhook
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: {
-          // Don't set Content-Type - let the browser set it with boundary for FormData
         },
         body: formData,
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
-
-      // Check if request was successful
       if (response.ok) {
-        const responseText = await response.text();
-        console.log('Success response:', responseText);
-
         Alert.alert(
           'Success!',
           'Resume uploaded successfully to n8n webhook!',
@@ -152,18 +105,10 @@ const ResumeUploadScreen = () => {
           ]
         );
       } else {
-        // Handle HTTP error responses
         const errorText = await response.text();
-        console.error('HTTP Error:', response.status, errorText);
-
-        let errorMessage = errorText;
-        if (response.status === 404) {
-          errorMessage = 'Webhook not found. Please make sure you have clicked "Execute Workflow" in n8n, or switch to production mode.';
-        }
-
         Alert.alert(
           'Upload Failed',
-          `Server returned error ${response.status}. Please check your n8n webhook and try again.\n\nError: ${errorMessage}`,
+          `Server returned error ${response.status}. Please check your n8n webhook.\n\nError: ${errorText}`,
           [
             { text: 'Retry', onPress: () => setIsLoading(false) },
             { text: 'Go Back', onPress: () => router.push('/Home') }
@@ -172,30 +117,9 @@ const ResumeUploadScreen = () => {
       }
 
     } catch (error: any) {
-      console.error('Network/Upload error:', error);
-
-      // Provide specific error messages based on error type
-      let errorMessage = 'Unknown error occurred';
-
-      if (error.message?.includes('Network request failed')) {
-        errorMessage = `Cannot connect to n8n webhook.
-
-Please check:
-• n8n is running on localhost:5678
-• Webhook URL is correct
-• Network connectivity
-• Firewall settings
-
-URL: ${WEBHOOK_URL}`;
-      } else if (error.message?.includes('timeout')) {
-        errorMessage = 'Request timed out. Please check your connection and try again.';
-      } else {
-        errorMessage = `Upload failed: ${error.message}`;
-      }
-
       Alert.alert(
         'Connection Error',
-        errorMessage,
+        `Cannot connect to n8n webhook.\n\nPlease check: n8n is running on localhost:5678`,
         [
           { text: 'Retry', onPress: () => setIsLoading(false) },
           { text: 'Go Back', onPress: () => router.push('/Home') }
@@ -212,119 +136,122 @@ URL: ${WEBHOOK_URL}`;
   };
 
   return (
-    <LinearGradient colors={COLORS.background} style={styles.container}>
-      <KeyboardAvoidingView
-        style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
+    <View style={styles.container}>
+      <LinearGradient colors={COLORS.background as any} style={styles.background}>
+        <KeyboardAvoidingView
+          style={styles.keyboardAvoidingView}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
         >
-          <View style={styles.header}>
-            <Ionicons name="document-text" size={60} color={COLORS.secondary} />
-            <Text style={styles.title}>Upload Your Resume</Text>
-            <Text style={styles.subtitle}>
-              Please upload your resume to get started
-            </Text>
-          </View>
-
-          <View style={styles.form}>
-            {/* Resume Upload Section */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>
-                Resume <Text style={styles.required}>*</Text>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.header}>
+              <Ionicons name="document-text" size={60} color={COLORS.primary} />
+              <Text style={styles.title}>Upload Your Resume</Text>
+              <Text style={styles.subtitle}>
+                Please upload your resume to get started
               </Text>
+            </View>
 
-              {!resumeFile ? (
-                <TouchableOpacity
-                  style={[styles.uploadButton, errors.resume && styles.errorBorder]}
-                  onPress={pickDocument}
-                >
-                  <Ionicons name="cloud-upload-outline" size={32} color={COLORS.secondary} />
-                  <Text style={styles.uploadText}>Tap to upload your resume</Text>
-                  <Text style={styles.uploadSubtext}>PDF, DOC, DOCX (Max 10MB)</Text>
-                </TouchableOpacity>
-              ) : (
-                <View style={styles.fileCard}>
-                  <View style={styles.fileInfo}>
-                    <Ionicons name="document-attach" size={24} color={COLORS.secondary} />
-                    <View style={styles.fileDetails}>
-                      <Text style={styles.fileName} numberOfLines={1}>
-                        {resumeFile.name}
-                      </Text>
-                      <Text style={styles.fileSize}>
-                        {resumeFile.size ? `${(resumeFile.size / 1024).toFixed(2)} KB` : 'File selected'}
-                      </Text>
-                    </View>
-                  </View>
-                  <TouchableOpacity onPress={removeResume}>
-                    <Ionicons name="close-circle" size={24} color={COLORS.error} />
+            <View style={styles.form}>
+              {/* Resume Upload Section */}
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>
+                  Resume <Text style={styles.required}>*</Text>
+                </Text>
+
+                {!resumeFile ? (
+                  <TouchableOpacity
+                    style={[styles.uploadButton, errors.resume && styles.errorBorder]}
+                    onPress={pickDocument}
+                  >
+                    <Ionicons name="cloud-upload-outline" size={32} color={COLORS.primary} />
+                    <Text style={styles.uploadText}>Tap to upload your resume</Text>
+                    <Text style={styles.uploadSubtext}>PDF, DOC, DOCX (Max 10MB)</Text>
                   </TouchableOpacity>
-                </View>
-              )}
+                ) : (
+                  <View style={styles.fileCard}>
+                    <View style={styles.fileInfo}>
+                      <Ionicons name="document-attach" size={24} color={COLORS.primary} />
+                      <View style={styles.fileDetails}>
+                        <Text style={styles.fileName} numberOfLines={1}>
+                          {resumeFile.name}
+                        </Text>
+                        <Text style={styles.fileSize}>
+                          {resumeFile.size ? `${(resumeFile.size / 1024).toFixed(2)} KB` : 'File selected'}
+                        </Text>
+                      </View>
+                    </View>
+                    <TouchableOpacity onPress={removeResume}>
+                      <Ionicons name="close-circle" size={24} color={COLORS.error} />
+                    </TouchableOpacity>
+                  </View>
+                )}
 
-              {errors.resume && (
-                <Text style={styles.errorText}>{errors.resume}</Text>
-              )}
+                {errors.resume && (
+                  <Text style={styles.errorText}>{errors.resume}</Text>
+                )}
+              </View>
+
+              {/* Submit Button */}
+              <TouchableOpacity
+                style={[styles.submitButton, isLoading && styles.disabledButton]}
+                onPress={handleSubmit}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <View
+                    style={styles.gradientButton}
+                  >
+                    <Text style={styles.submitButtonText}>Send Resume</Text>
+                    <Ionicons name="arrow-forward" size={20} color="#ffffff" />
+                  </View>
+                )}
+              </TouchableOpacity>
+
+              {/* Test Connection Button */}
+              <TouchableOpacity
+                style={styles.testButton}
+                onPress={async () => {
+                  const isConnected = await testWebhookConnection();
+                  Alert.alert(
+                    'Connection Test',
+                    isConnected
+                      ? 'Successfully connected to n8n webhook!'
+                      : 'Failed to connect to n8n webhook.',
+                    [{ text: 'OK' }]
+                  );
+                }}
+              >
+                <Ionicons name="wifi" size={16} color={COLORS.text.muted} />
+                <Text style={styles.testButtonText}>Test Webhook</Text>
+              </TouchableOpacity>
+
+              {/* Info Card */}
+              <View style={styles.infoCard}>
+                <Ionicons name="information-circle" size={20} color={COLORS.primary} />
+                <Text style={styles.infoText}>
+                  Your resume will be used to provide personalized assistance in the chat.
+                </Text>
+              </View>
             </View>
-
-            {/* Submit Button */}
-            <TouchableOpacity
-              style={[styles.submitButton, isLoading && styles.disabledButton]}
-              onPress={handleSubmit}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator size="small" color="#ffffff" />
-              ) : (
-                <LinearGradient
-                  colors={[COLORS.secondary, COLORS.primary]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.gradientButton}
-                >
-                  <Text style={styles.submitButtonText}>Send Resume</Text>
-                  <Ionicons name="arrow-forward" size={20} color="#ffffff" />
-                </LinearGradient>
-              )}
-            </TouchableOpacity>
-
-            {/* Test Connection Button */}
-            <TouchableOpacity
-              style={styles.testButton}
-              onPress={async () => {
-                const isConnected = await testWebhookConnection();
-                Alert.alert(
-                  'Connection Test',
-                  isConnected
-                    ? 'Successfully connected to n8n webhook at localhost:5678!'
-                    : 'Failed to connect to n8n webhook.\n\nPossible issues:\n• n8n is not running on localhost:5678\n• Webhook URL might be incorrect\n• React Native app cannot reach localhost (try using your computer\'s IP address instead)\n• Network connectivity issues\n\nCheck console logs for detailed error information.',
-                  [{ text: 'OK' }]
-                );
-              }}
-            >
-              <Ionicons name="wifi" size={16} color={COLORS.text.muted} />
-              <Text style={styles.testButtonText}>Test Webhook Connection</Text>
-            </TouchableOpacity>
-
-            {/* Info Card */}
-            <View style={styles.infoCard}>
-              <Ionicons name="information-circle" size={20} color={COLORS.secondary} />
-              <Text style={styles.infoText}>
-                Your resume will be used to provide personalized assistance in the chat.
-              </Text>
-            </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </LinearGradient>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: COLORS.background[0],
+  },
+  background: {
     flex: 1,
   },
   keyboardAvoidingView: {
@@ -345,6 +272,7 @@ const styles = StyleSheet.create({
     color: COLORS.text.primary,
     marginTop: 16,
     marginBottom: 8,
+    letterSpacing: 1.5,
   },
   subtitle: {
     fontSize: 16,
@@ -364,42 +292,38 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.text.primary,
     marginBottom: 8,
+    letterSpacing: 0.5,
   },
   required: {
     color: COLORS.error,
   },
-  helperText: {
-    fontSize: 14,
-    color: COLORS.text.muted,
-    marginBottom: 8,
-  },
   uploadButton: {
-    borderWidth: 2,
-    borderColor: 'rgba(0, 210, 255, 0.3)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.3)',
     borderStyle: 'dashed',
     borderRadius: 12,
     padding: 24,
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 210, 255, 0.05)',
+    backgroundColor: 'rgba(30, 41, 59, 0.4)',
   },
   uploadText: {
     fontSize: 16,
-    color: COLORS.text.primary,
+    color: COLORS.primary,
     marginTop: 12,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   uploadSubtext: {
     fontSize: 13,
-    color: COLORS.text.muted,
+    color: COLORS.text.secondary,
     marginTop: 4,
   },
   fileCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(0, 210, 255, 0.1)',
+    backgroundColor: 'rgba(30, 41, 59, 0.6)',
     borderWidth: 1,
-    borderColor: 'rgba(0, 210, 255, 0.3)',
+    borderColor: 'rgba(56, 189, 248, 0.2)',
     borderRadius: 12,
     padding: 16,
   },
@@ -419,17 +343,8 @@ const styles = StyleSheet.create({
   },
   fileSize: {
     fontSize: 12,
-    color: COLORS.text.muted,
+    color: COLORS.text.secondary,
     marginTop: 2,
-  },
-  input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: COLORS.text.primary,
   },
   errorBorder: {
     borderColor: COLORS.error,
@@ -444,6 +359,7 @@ const styles = StyleSheet.create({
     marginTop: 32,
     marginBottom: 20,
     overflow: 'hidden',
+    backgroundColor: COLORS.primary,
     ...COMMON_STYLES.shadow,
   },
   gradientButton: {
@@ -460,11 +376,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#ffffff',
     marginRight: 8,
+    letterSpacing: 1,
   },
   testButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: COLORS.text.muted,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -474,14 +391,14 @@ const styles = StyleSheet.create({
   },
   testButtonText: {
     fontSize: 14,
-    color: COLORS.text.muted,
+    color: COLORS.text.secondary,
     marginLeft: 8,
   },
   infoCard: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(0, 210, 255, 0.1)',
+    backgroundColor: 'rgba(30, 41, 59, 0.4)',
     borderWidth: 1,
-    borderColor: 'rgba(0, 210, 255, 0.2)',
+    borderColor: 'rgba(56, 189, 248, 0.1)',
     borderRadius: 12,
     padding: 16,
     marginTop: 8,
@@ -489,7 +406,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: 14,
-    color: COLORS.text.muted,
+    color: COLORS.text.primary,
     marginLeft: 12,
     lineHeight: 20,
   },

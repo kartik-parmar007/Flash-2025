@@ -25,15 +25,15 @@ export default function RootLayout() {
           name="history"
           options={{
             title: 'Chat History',
-            headerStyle: {
-              backgroundColor: '#3c0ebcff',
-            },
-            headerTintColor: '#c2b3b3ff', // For back button and title color
-            headerTitleAlign: 'center', // This centers the title
-            headerShown: false, // This hides the entire header
+            headerShown: false,
           }}
         />
         <Stack.Screen name="loading" options={{ headerShown: false }} />
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="Home" options={{ headerShown: false }} />
+        <Stack.Screen name="Resume" options={{ headerShown: false }} />
+        <Stack.Screen name="ResumeLocation" options={{ headerShown: false }} />
+        <Stack.Screen name="ImageDetector" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>

@@ -9,6 +9,7 @@ export interface Message {
 export interface ChatSession {
   id: string;
   messages: Message[];
+  date: string;
 }
 
 const CHAT_HISTORY_KEY = 'chat_history';
@@ -32,13 +33,25 @@ export const saveChatHistory = async (history: ChatSession[]) => {
   }
 };
 
+export const clearChatHistory = async () => {
+  try {
+    await AsyncStorage.removeItem(CHAT_HISTORY_KEY);
+  } catch (e) {
+    console.error('Failed to clear chat history.', e);
+  }
+};
+
 export const addMessageToHistory = async (sessionId: string, message: Message) => {
   const history = await getChatHistory();
   const session = history.find((s) => s.id === sessionId);
   if (session) {
     session.messages.push(message);
   } else {
-    history.push({ id: sessionId, messages: [message] });
+    history.push({
+      id: sessionId,
+      messages: [message],
+      date: new Date().toISOString()
+    });
   }
   await saveChatHistory(history);
 };

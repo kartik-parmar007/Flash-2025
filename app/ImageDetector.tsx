@@ -87,7 +87,6 @@ const ImageDetectorScreen = () => {
 
             if (response.ok) {
                 const responseText = await response.text();
-                console.log('Success response:', responseText);
                 setDetectionResult(responseText);
 
                 Alert.alert(
@@ -116,109 +115,110 @@ const ImageDetectorScreen = () => {
     };
 
     return (
-        <LinearGradient colors={COLORS.background} style={styles.container}>
-            <KeyboardAvoidingView
-                style={styles.keyboardAvoidingView}
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
-            >
-                <ScrollView
-                    contentContainerStyle={styles.scrollContent}
-                    showsVerticalScrollIndicator={false}
+        <View style={styles.container}>
+            <LinearGradient colors={COLORS.background as any} style={styles.background}>
+                <KeyboardAvoidingView
+                    style={styles.keyboardAvoidingView}
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
                 >
-                    <View style={styles.header}>
-                        <Ionicons name="images" size={60} color={COLORS.primary} />
-                        <Text style={styles.title}>AI Image Detector</Text>
-                        <Text style={styles.subtitle}>
-                            Upload an image or video to detect objects or content
-                        </Text>
-                    </View>
-
-                    <View style={styles.form}>
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>
-                                Media <Text style={styles.required}>*</Text>
+                    <ScrollView
+                        contentContainerStyle={styles.scrollContent}
+                        showsVerticalScrollIndicator={false}
+                    >
+                        <View style={styles.header}>
+                            <Ionicons name="images" size={60} color={COLORS.primary} />
+                            <Text style={styles.title}>AI Image Detector</Text>
+                            <Text style={styles.subtitle}>
+                                Upload an image or video to detect objects or content
                             </Text>
+                        </View>
 
-                            {!selectedFile ? (
-                                <TouchableOpacity
-                                    style={[styles.uploadButton, errors.file && styles.errorBorder]}
-                                    onPress={pickMedia}
-                                >
-                                    <Ionicons name="cloud-upload-outline" size={32} color={COLORS.primary} />
-                                    <Text style={styles.uploadText}>Tap to upload image or video</Text>
-                                    <Text style={styles.uploadSubtext}>JPG, PNG, MP4 (Max 10MB)</Text>
-                                </TouchableOpacity>
-                            ) : (
-                                <View style={styles.fileCard}>
-                                    <View style={styles.fileInfo}>
-                                        <Ionicons
-                                            name={selectedFile.mimeType?.startsWith('video/') ? "videocam" : "image"}
-                                            size={24}
-                                            color={COLORS.primary}
-                                        />
-                                        <View style={styles.fileDetails}>
-                                            <Text style={styles.fileName} numberOfLines={1}>
-                                                {selectedFile.name}
-                                            </Text>
-                                            <Text style={styles.fileSize}>
-                                                {selectedFile.size ? `${(selectedFile.size / 1024).toFixed(2)} KB` : 'File selected'}
-                                            </Text>
-                                        </View>
-                                    </View>
-                                    <TouchableOpacity onPress={removeFile}>
-                                        <Ionicons name="close-circle" size={24} color={COLORS.error} />
+                        <View style={styles.form}>
+                            <View style={styles.formGroup}>
+                                <Text style={styles.label}>
+                                    Media <Text style={styles.required}>*</Text>
+                                </Text>
+
+                                {!selectedFile ? (
+                                    <TouchableOpacity
+                                        style={[styles.uploadButton, errors.file && styles.errorBorder]}
+                                        onPress={pickMedia}
+                                    >
+                                        <Ionicons name="cloud-upload-outline" size={32} color={COLORS.primary} />
+                                        <Text style={styles.uploadText}>Tap to upload image or video</Text>
+                                        <Text style={styles.uploadSubtext}>JPG, PNG, MP4 (Max 10MB)</Text>
                                     </TouchableOpacity>
+                                ) : (
+                                    <View style={styles.fileCard}>
+                                        <View style={styles.fileInfo}>
+                                            <Ionicons
+                                                name={selectedFile.mimeType?.startsWith('video/') ? "videocam" : "image"}
+                                                size={24}
+                                                color={COLORS.primary}
+                                            />
+                                            <View style={styles.fileDetails}>
+                                                <Text style={styles.fileName} numberOfLines={1}>
+                                                    {selectedFile.name}
+                                                </Text>
+                                                <Text style={styles.fileSize}>
+                                                    {selectedFile.size ? `${(selectedFile.size / 1024).toFixed(2)} KB` : 'File selected'}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                        <TouchableOpacity onPress={removeFile}>
+                                            <Ionicons name="close-circle" size={24} color={COLORS.error} />
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
+
+                                {errors.file && (
+                                    <Text style={styles.errorText}>{errors.file}</Text>
+                                )}
+                            </View>
+
+                            <TouchableOpacity
+                                style={[styles.submitButton, isLoading && styles.disabledButton]}
+                                onPress={handleSubmit}
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <ActivityIndicator size="small" color="#ffffff" />
+                                ) : (
+                                    <View style={styles.gradientButton}>
+                                        <Text style={styles.submitButtonText}>Analyze Media</Text>
+                                        <Ionicons name="scan" size={20} color="#ffffff" />
+                                    </View>
+                                )}
+                            </TouchableOpacity>
+
+                            {detectionResult && (
+                                <View style={styles.resultCard}>
+                                    <Text style={styles.resultTitle}>Detection Result:</Text>
+                                    <Text style={styles.resultText}>{detectionResult}</Text>
                                 </View>
                             )}
 
-                            {errors.file && (
-                                <Text style={styles.errorText}>{errors.file}</Text>
-                            )}
-                        </View>
-
-                        <TouchableOpacity
-                            style={[styles.submitButton, isLoading && styles.disabledButton]}
-                            onPress={handleSubmit}
-                            disabled={isLoading}
-                        >
-                            {isLoading ? (
-                                <ActivityIndicator size="small" color="#ffffff" />
-                            ) : (
-                                <LinearGradient
-                                    colors={[COLORS.primary, '#818cf8']}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 0 }}
-                                    style={styles.gradientButton}
-                                >
-                                    <Text style={styles.submitButtonText}>Analyze Media</Text>
-                                    <Ionicons name="scan" size={20} color="#ffffff" />
-                                </LinearGradient>
-                            )}
-                        </TouchableOpacity>
-
-                        {detectionResult && (
-                            <View style={styles.resultCard}>
-                                <Text style={styles.resultTitle}>Detection Result:</Text>
-                                <Text style={styles.resultText}>{detectionResult}</Text>
+                            <View style={styles.infoCard}>
+                                <Ionicons name="information-circle" size={20} color={COLORS.primary} />
+                                <Text style={styles.infoText}>
+                                    The media will be sent to our AI server for analysis.
+                                </Text>
                             </View>
-                        )}
-
-                        <View style={styles.infoCard}>
-                            <Ionicons name="information-circle" size={20} color={COLORS.primary} />
-                            <Text style={styles.infoText}>
-                                The media will be sent to our AI server for analysis.
-                            </Text>
                         </View>
-                    </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
-        </LinearGradient>
+                    </ScrollView>
+                </KeyboardAvoidingView>
+            </LinearGradient>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
+        flex: 1,
+        backgroundColor: COLORS.background[0],
+    },
+    background: {
         flex: 1,
     },
     keyboardAvoidingView: {
@@ -239,6 +239,7 @@ const styles = StyleSheet.create({
         color: COLORS.text.primary,
         marginTop: 16,
         marginBottom: 8,
+        letterSpacing: 2,
     },
     subtitle: {
         fontSize: 16,
@@ -258,18 +259,19 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: COLORS.text.primary,
         marginBottom: 8,
+        letterSpacing: 1,
     },
     required: {
         color: COLORS.error,
     },
     uploadButton: {
-        borderWidth: 2,
-        borderColor: 'rgba(99, 102, 241, 0.3)',
+        borderWidth: 1,
+        borderColor: 'rgba(56, 189, 248, 0.3)',
         borderStyle: 'dashed',
         borderRadius: 12,
         padding: 24,
         alignItems: 'center',
-        backgroundColor: 'rgba(99, 102, 241, 0.05)',
+        backgroundColor: 'rgba(30, 41, 59, 0.4)',
     },
     uploadText: {
         fontSize: 16,
@@ -279,16 +281,16 @@ const styles = StyleSheet.create({
     },
     uploadSubtext: {
         fontSize: 13,
-        color: COLORS.text.muted,
+        color: COLORS.text.secondary,
         marginTop: 4,
     },
     fileCard: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+        backgroundColor: 'rgba(30, 41, 59, 0.6)',
         borderWidth: 1,
-        borderColor: 'rgba(99, 102, 241, 0.3)',
+        borderColor: 'rgba(56, 189, 248, 0.2)',
         borderRadius: 12,
         padding: 16,
     },
@@ -308,7 +310,7 @@ const styles = StyleSheet.create({
     },
     fileSize: {
         fontSize: 12,
-        color: COLORS.text.muted,
+        color: COLORS.text.secondary,
         marginTop: 2,
     },
     errorBorder: {
@@ -324,6 +326,7 @@ const styles = StyleSheet.create({
         marginTop: 32,
         marginBottom: 20,
         overflow: 'hidden',
+        backgroundColor: COLORS.primary,
         ...COMMON_STYLES.shadow,
     },
     gradientButton: {
@@ -340,11 +343,12 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#ffffff',
         marginRight: 8,
+        letterSpacing: 1,
     },
     resultCard: {
-        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+        backgroundColor: 'rgba(30, 41, 59, 0.8)',
         borderWidth: 1,
-        borderColor: 'rgba(99, 102, 241, 0.3)',
+        borderColor: 'rgba(56, 189, 248, 0.2)',
         borderRadius: 12,
         padding: 16,
         marginTop: 20,
@@ -357,14 +361,14 @@ const styles = StyleSheet.create({
     },
     resultText: {
         fontSize: 14,
-        color: COLORS.text.primary,
+        color: COLORS.text.secondary,
         lineHeight: 20,
     },
     infoCard: {
         flexDirection: 'row',
-        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+        backgroundColor: 'rgba(30, 41, 59, 0.4)',
         borderWidth: 1,
-        borderColor: 'rgba(99, 102, 241, 0.2)',
+        borderColor: 'rgba(56, 189, 248, 0.1)',
         borderRadius: 12,
         padding: 16,
         marginTop: 20,
@@ -372,7 +376,7 @@ const styles = StyleSheet.create({
     infoText: {
         flex: 1,
         fontSize: 14,
-        color: COLORS.text.muted,
+        color: COLORS.text.secondary,
         marginLeft: 12,
         lineHeight: 20,
     },
